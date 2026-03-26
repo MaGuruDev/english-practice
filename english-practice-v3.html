@@ -246,8 +246,7 @@ select option { background:var(--surface); }
               </svg>
             </button>
             <button class="mic-btn disabled" id="mic-btn"
-              onmousedown="startMic()" onmouseup="stopMic()" onmouseleave="stopMic()"
-              ontouchstart="startMic(event)" ontouchend="stopMic(event)" ontouchcancel="stopMic(event)">
+              onmousedown="startMic()" ontouchstart="startMic(event)" ontouchend="stopMic(event)" ontouchcancel="stopMic(event)">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                 <rect x="9" y="2" width="6" height="12" rx="3"/>
                 <path d="M5 10a7 7 0 0014 0M12 19v3M9 22h6"/>
@@ -426,6 +425,9 @@ function stopMic(e) {
   try { recognition.stop(); } catch(err) {}
 }
 
+// Stop mic on mouseup anywhere on the page
+document.addEventListener('mouseup', () => { if (isListening) stopMic(); });
+
 function setStatus(msg, active) {
   const el = document.getElementById('mic-status');
   el.textContent = msg;
@@ -543,15 +545,22 @@ async function callGroqSimple(sys, messages) {
 
 function renderCorrections(corrections) {
   const list = document.getElementById('corrections-list');
-  if (!corrections || (!corrections.errors?.length && !corrections.good?.length && !corrections.tip)) {
+  if (!corrections) return;
+
+  // Normalize: good may arrive as string instead of array
+  if (typeof corrections.good === 'string') corrections.good = corrections.good ? [corrections.good] : [];
+  if (!Array.isArray(corrections.good)) corrections.good = [];
+  if (!Array.isArray(corrections.errors)) corrections.errors = [];
+
+  if (!corrections.errors.length && !corrections.good.length && !corrections.tip) {
     const c = document.createElement('div'); c.className='correction-card good';
     c.innerHTML='<div class="corr-type">Добре</div><div class="corr-note">Помилок не знайдено ✓</div>';
     list.insertBefore(c, list.firstChild); return;
   }
   const f = document.createDocumentFragment();
   if (corrections.tip) { const c=document.createElement('div'); c.className='correction-card tip'; c.innerHTML=`<div class="corr-type">Порада</div><div class="corr-note">${escHtml(corrections.tip)}</div>`; f.appendChild(c); }
-  corrections.good?.forEach(g => { const c=document.createElement('div'); c.className='correction-card good'; c.innerHTML=`<div class="corr-type">Добре ✓</div><div class="corr-note">${escHtml(g)}</div>`; f.appendChild(c); });
-  corrections.errors?.forEach(e => { const c=document.createElement('div'); c.className='correction-card error'; c.innerHTML=`<div class="corr-type">${escHtml(e.type||'Помилка')}</div><div><span class="corr-wrong">${escHtml(e.wrong||'')}</span><span class="corr-arrow"> → </span><span class="corr-right">${escHtml(e.right||'')}</span></div>${e.note?`<div class="corr-note">${escHtml(e.note)}</div>`:''}`; f.appendChild(c); });
+  corrections.good.forEach(g => { const c=document.createElement('div'); c.className='correction-card good'; c.innerHTML=`<div class="corr-type">Добре ✓</div><div class="corr-note">${escHtml(String(g))}</div>`; f.appendChild(c); });
+  corrections.errors.forEach(e => { const c=document.createElement('div'); c.className='correction-card error'; c.innerHTML=`<div class="corr-type">${escHtml(e.type||'Помилка')}</div><div><span class="corr-wrong">${escHtml(e.wrong||'')}</span><span class="corr-arrow"> → </span><span class="corr-right">${escHtml(e.right||'')}</span></div>${e.note?`<div class="corr-note">${escHtml(e.note)}</div>`:''}`; f.appendChild(c); });
   list.insertBefore(f, list.firstChild);
   const nc = list.querySelector('.no-corrections'); if (nc) nc.remove();
 }
