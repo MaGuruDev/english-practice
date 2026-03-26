@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Practice v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0e0f11; --surface: #16181c; --surface2: #1e2025;
+  --border: #2a2d35; --text: #e8eaf0; --text2: #8b8fa8; --text3: #555870;
+  --accent: #4ade80; --accent2: #22c55e; --warn: #fbbf24; --err: #f87171;
+  --info: #60a5fa; --purple: #a78bfa; --radius: 12px; --radius-sm: 8px;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* SETUP */
+#setup { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; gap:20px; }
+.logo { font-family:'DM Mono',monospace; font-size:13px; color:var(--accent); letter-spacing:.15em; text-transform:uppercase; }
+.setup-card { width:100%; max-width:420px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; display:flex; flex-direction:column; gap:16px; }
+.setup-title { font-size:20px; font-weight:500; }
+.setup-sub { font-size:13px; color:var(--text2); line-height:1.5; }
+label { font-size:11px; font-weight:500; color:var(--text2); letter-spacing:.05em; text-transform:uppercase; display:block; margin-bottom:5px; }
+input[type="password"], input[type="text"], input[type="range"], select { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:'DM Mono',monospace; font-size:13px; padding:10px 14px; outline:none; transition:border-color .2s; }
+input[type="range"] { padding:6px 0; cursor:pointer; accent-color:var(--accent); }
+input:focus, select:focus { border-color:var(--accent); }
+select option { background:var(--surface); }
+.btn-primary { width:100%; padding:12px; background:var(--accent); color:#0a1a10; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; border:none; border-radius:var(--radius-sm); cursor:pointer; transition:background .2s,transform .1s; }
+.btn-primary:hover { background:var(--accent2); }
+.btn-primary:active { transform:scale(.98); }
+.hint { font-size:11px; color:var(--text3); line-height:1.5; }
+.hint a { color:var(--info); text-decoration:none; }
+.speed-row { display:flex; align-items:center; gap:10px; }
+.speed-row input { flex:1; }
+.speed-val { font-size:12px; color:var(--accent); font-family:'DM Mono',monospace; min-width:30px; text-align:right; }
+
+/* APP */
+#app { display:none; flex:1; flex-direction:column; height:100vh; overflow:hidden; }
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; gap:8px; flex-wrap:wrap; }
+.topbar-left { font-family:'DM Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:.1em; white-space:nowrap; }
+.topbar-right { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.stat { font-size:11px; color:var(--text3); white-space:nowrap; }
+.stat span { color:var(--text2); font-weight:500; }
+.btn-sm { font-size:11px; color:var(--text3); background:none; border:1px solid var(--border); border-radius:6px; padding:4px 10px; cursor:pointer; font-family:'DM Sans',sans-serif; transition:color .2s,border-color .2s; white-space:nowrap; }
+.btn-sm:hover { color:var(--text2); border-color:var(--text3); }
+.btn-sm.active { color:var(--purple); border-color:var(--purple); }
+
+/* MODE TABS */
+.mode-tabs { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--surface); }
+.tab { flex:1; padding:9px 4px; font-size:12px; text-align:center; color:var(--text3); cursor:pointer; border-bottom:2px solid transparent; transition:color .2s,border-color .2s; user-select:none; }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+/* PANELS */
+.panel { display:none; flex:1; flex-direction:column; overflow:hidden; }
+.panel.active { display:flex; }
+.main { display:flex; flex:1; overflow:hidden; }
+
+/* CHAT */
+.chat-col { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.topic-bar { padding:8px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.topic-label { font-size:11px; color:var(--text3); white-space:nowrap; }
+.topic-select { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text2); font-family:'DM Sans',sans-serif; font-size:12px; padding:5px 8px; outline:none; }
+.topic-select:focus { border-color:var(--accent); }
+.messages { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+.msg { max-width:85%; border-radius:var(--radius); padding:11px 13px; font-size:14px; line-height:1.55; animation:fadeUp .25s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.msg-ai { background:var(--surface); border:1px solid var(--border); align-self:flex-start; }
+.msg-user { background:#1a2e1f; border:1px solid #2a4a30; align-self:flex-end; }
+.msg-label { font-size:10px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; }
+.msg-ai .msg-label { color:var(--accent); }
+.msg-user .msg-label { color:#4ade80aa; }
+.msg-thinking { background:var(--surface); border:1px solid var(--border); align-self:flex-start; padding:13px; border-radius:var(--radius); }
+.dots { display:flex; gap:4px; align-items:center; }
+.dot { width:6px; height:6px; background:var(--text3); border-radius:50%; animation:bounce 1.2s infinite; }
+.dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce { 0%,80%,100%{transform:translateY(0);opacity:.4} 40%{transform:translateY(-5px);opacity:1} }
+
+/* MIC */
+.mic-area { padding:12px 16px; border-top:1px solid var(--border); display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--surface); flex-shrink:0; }
+.mic-row { display:flex; align-items:center; gap:12px; }
+.mic-btn { width:64px; height:64px; border-radius:50%; border:2px solid var(--border); background:var(--surface2); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; touch-action:none; user-select:none; -webkit-user-select:none; }
+.mic-btn:hover { border-color:var(--accent); }
+.mic-btn.listening { border-color:var(--err); background:#2a1010; animation:pulse 1.5s infinite; }
+.mic-btn.disabled { opacity:.35; cursor:not-allowed; pointer-events:none; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.3)} 50%{box-shadow:0 0 0 12px rgba(248,113,113,0)} }
+.replay-btn { width:38px; height:38px; border-radius:50%; border:1px solid var(--border); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; color:var(--text3); }
+.replay-btn:hover { border-color:var(--info); color:var(--info); }
+.replay-btn:active { transform:scale(.92); }
+.replay-btn.disabled { opacity:.25; pointer-events:none; }
+.speed-ctrl { display:flex; align-items:center; gap:6px; }
+.speed-ctrl label { margin:0; font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; }
+.speed-ctrl input { width:80px; padding:4px 0; }
+.speed-ctrl span { font-size:11px; color:var(--accent); font-family:'DM Mono',monospace; min-width:28px; }
+.mic-status { font-size:12px; color:var(--text3); font-family:'DM Mono',monospace; letter-spacing:.05em; min-height:16px; text-align:center; }
+.mic-status.active { color:var(--err); }
+
+/* CORRECTIONS */
+.corrections-panel { width:220px; border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; }
+@media(max-width:500px){.corrections-panel{width:140px}}
+.corrections-header { padding:10px 12px; border-bottom:1px solid var(--border); font-size:11px; font-weight:500; color:var(--text3); letter-spacing:.1em; text-transform:uppercase; flex-shrink:0; }
+.corrections-list { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:8px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+.correction-card { border-radius:var(--radius-sm); padding:9px 11px; font-size:12px; line-height:1.5; animation:fadeUp .3s ease; }
+.correction-card.error { background:#1f1510; border:1px solid #3a2510; }
+.correction-card.good { background:#0f1f14; border:1px solid #1a3820; }
+.correction-card.tip { background:#101520; border:1px solid #1a2540; }
+.corr-type { font-size:10px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; }
+.error .corr-type{color:var(--warn)} .good .corr-type{color:var(--accent)} .tip .corr-type{color:var(--info)}
+.corr-wrong { text-decoration:line-through; color:var(--text3); }
+.corr-right { color:var(--text); font-weight:500; }
+.corr-arrow { color:var(--text3); margin:0 3px; }
+.corr-note { color:var(--text2); margin-top:3px; font-size:11px; }
+.no-corrections { color:var(--text3); font-size:12px; text-align:center; margin-top:20px; line-height:1.6; }
+#error-banner { display:none; padding:9px 13px; background:#2a1010; border:1px solid #4a2020; border-radius:var(--radius-sm); font-size:12px; color:var(--err); margin:6px 14px; }
+
+/* PHRASAL VERBS PANEL */
+.pv-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.pv-header { padding:14px 16px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.pv-title { font-size:15px; font-weight:500; margin-bottom:4px; }
+.pv-sub { font-size:12px; color:var(--text2); }
+.pv-body { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:12px; }
+.pv-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
+.pv-verb { font-size:18px; font-weight:500; color:var(--accent); font-family:'DM Mono',monospace; }
+.pv-meaning { font-size:13px; color:var(--text2); margin:4px 0 10px; }
+.pv-example { font-size:13px; color:var(--text); background:var(--surface2); border-radius:6px; padding:8px 10px; margin-bottom:10px; border-left:2px solid var(--accent); }
+.pv-task { font-size:13px; color:var(--warn); margin-bottom:8px; }
+.pv-input-row { display:flex; gap:8px; }
+.pv-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; padding:8px 12px; outline:none; }
+.pv-input:focus { border-color:var(--accent); }
+.btn-check { padding:8px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text2); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.btn-check:hover { border-color:var(--accent); color:var(--accent); }
+.pv-feedback { font-size:12px; padding:7px 10px; border-radius:6px; margin-top:6px; display:none; }
+.pv-feedback.ok { background:#0f1f14; border:1px solid #1a3820; color:var(--accent); }
+.pv-feedback.bad { background:#1f1510; border:1px solid #3a2510; color:var(--warn); }
+.btn-next { width:100%; padding:10px; background:transparent; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text3); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all .2s; margin-top:4px; }
+.btn-next:hover { border-color:var(--accent); color:var(--accent); }
+
+/* LEVEL TEST PANEL */
+.test-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.test-intro { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; gap:16px; text-align:center; }
+.test-icon { font-size:36px; }
+.test-intro-title { font-size:18px; font-weight:500; }
+.test-intro-sub { font-size:13px; color:var(--text2); line-height:1.6; max-width:300px; }
+.btn-start-test { padding:12px 32px; background:var(--accent); color:#0a1a10; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; border:none; border-radius:var(--radius-sm); cursor:pointer; transition:background .2s; }
+.btn-start-test:hover { background:var(--accent2); }
+.test-active { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:14px; display:none; }
+.test-progress { display:flex; align-items:center; gap:10px; flex-shrink:0; padding:10px 14px; border-bottom:1px solid var(--border); }
+.progress-bar-wrap { flex:1; height:4px; background:var(--surface2); border-radius:2px; }
+.progress-bar { height:4px; background:var(--accent); border-radius:2px; transition:width .4s; }
+.progress-txt { font-size:11px; color:var(--text3); font-family:'DM Mono',monospace; white-space:nowrap; }
+.q-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; animation:fadeUp .25s ease; }
+.q-num { font-size:11px; color:var(--text3); margin-bottom:8px; }
+.q-text { font-size:14px; color:var(--text); line-height:1.55; margin-bottom:14px; }
+.q-options { display:flex; flex-direction:column; gap:8px; }
+.q-opt { padding:10px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px; color:var(--text2); cursor:pointer; transition:all .2s; text-align:left; }
+.q-opt:hover { border-color:var(--accent); color:var(--text); }
+.q-opt.correct { background:#0f1f14; border-color:var(--accent); color:var(--accent); }
+.q-opt.wrong { background:#1f1510; border-color:var(--err); color:var(--err); }
+.q-opt.disabled { pointer-events:none; }
+.test-result { display:none; flex:1; flex-direction:column; align-items:center; justify-content:center; padding:24px; gap:14px; text-align:center; }
+.result-level { font-size:48px; font-weight:500; color:var(--accent); font-family:'DM Mono',monospace; }
+.result-title { font-size:16px; font-weight:500; }
+.result-sub { font-size:13px; color:var(--text2); line-height:1.6; max-width:300px; }
+.result-score { font-size:13px; color:var(--text3); }
+.btn-retest { padding:10px 28px; background:transparent; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text3); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all .2s; }
+.btn-retest:hover { border-color:var(--accent); color:var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup">
+  <div class="logo">● English Practice v2</div>
+  <div class="setup-card">
+    <div>
+      <div class="setup-title">Налаштування</div>
+      <div class="setup-sub" style="margin-top:5px">Ключ зберігається тільки в браузері.</div>
+    </div>
+    <div>
+      <label>Groq API Key</label>
+      <input type="password" id="api-key-input" placeholder="gsk_..." />
+    </div>
+    <div>
+      <label>Рівень</label>
+      <select id="level-select">
+        <option value="A2">A2 — Початковий</option>
+        <option value="B1" selected>B1 — Середній</option>
+        <option value="B2">B2 — Вище середнього</option>
+      </select>
+    </div>
+    <div>
+      <label>Швидкість голосу ШІ</label>
+      <div class="speed-row">
+        <input type="range" id="setup-speed" min="0.6" max="1.4" step="0.1" value="0.9" oninput="document.getElementById('setup-speed-val').textContent=parseFloat(this.value).toFixed(1)+'x'">
+        <span class="speed-val" id="setup-speed-val">0.9x</span>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="startApp()">Почати →</button>
+    <div class="hint">Ключ: <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> · Потрібен Chrome для мікрофону</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">english practice v2</div>
+    <div class="topbar-right">
+      <div class="stat">помилок: <span id="stat-errors">0</span></div>
+      <div class="stat">реплік: <span id="stat-turns">0</span></div>
+      <button class="btn-sm" onclick="resetApp()">↩ ключ</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="mode-tabs">
+    <div class="tab active" onclick="switchTab('chat')">💬 Розмова</div>
+    <div class="tab" onclick="switchTab('phrasal')">📚 Фразові дієслова</div>
+    <div class="tab" onclick="switchTab('test')">🎯 Тест рівня</div>
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div class="panel active" id="panel-chat">
+    <div class="main">
+      <div class="chat-col">
+        <div class="topic-bar">
+          <span class="topic-label">Тема:</span>
+          <select class="topic-select" id="topic-select">
+            <option>Free conversation — вільна розмова</option>
+            <option>My weekend — мої вихідні</option>
+            <option>Work & career — робота</option>
+            <option>Travel — подорожі</option>
+            <option>Food & restaurants — їжа</option>
+            <option>Hobbies — хобі</option>
+            <option>Movies & music — фільми</option>
+            <option>Plans for the future — плани</option>
+            <option>Daily routine — повсякден</option>
+          </select>
+        </div>
+        <div id="error-banner"></div>
+        <div class="messages" id="messages"></div>
+        <div class="mic-area">
+          <div class="mic-row">
+            <button class="replay-btn disabled" id="replay-btn" title="Повторити фразу ШІ" onclick="replayLast()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/>
+              </svg>
+            </button>
+            <button class="mic-btn disabled" id="mic-btn"
+              onmousedown="startMic()" onmouseup="stopMic()" onmouseleave="stopMic()"
+              ontouchstart="startMic(event)" ontouchend="stopMic(event)" ontouchcancel="stopMic(event)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <rect x="9" y="2" width="6" height="12" rx="3"/>
+                <path d="M5 10a7 7 0 0014 0M12 19v3M9 22h6"/>
+              </svg>
+            </button>
+            <div class="speed-ctrl">
+              <label>Швидкість</label>
+              <input type="range" id="speed-slider" min="0.6" max="1.4" step="0.1" value="0.9" oninput="updateSpeed(this.value)">
+              <span id="speed-val">0.9x</span>
+            </div>
+          </div>
+          <div class="mic-status" id="mic-status">ініціалізація...</div>
+          <div style="font-size:10px;color:var(--text3);letter-spacing:.04em">утримуй кнопку поки говориш</div>
+        </div>
+      </div>
+      <div class="corrections-panel">
+        <div class="corrections-header">Виправлення</div>
+        <div class="corrections-list" id="corrections-list">
+          <div class="no-corrections">Тут з'являться твої помилки після першої репліки</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHRASAL VERBS PANEL -->
+  <div class="panel" id="panel-phrasal">
+    <div class="pv-panel">
+      <div class="pv-header">
+        <div class="pv-title">Фразові дієслова</div>
+        <div class="pv-sub">Побудуй речення з фразовим дієсловом — ШІ перевірить і поясни</div>
+      </div>
+      <div class="pv-body" id="pv-body">
+        <!-- filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- LEVEL TEST PANEL -->
+  <div class="panel" id="panel-test">
+    <div class="test-panel">
+      <div class="test-intro" id="test-intro">
+        <div class="test-icon">🎯</div>
+        <div class="test-intro-title">Тест рівня англійської</div>
+        <div class="test-intro-sub">15 питань на граматику, лексику і розуміння. Результат: A1 → C1. Займе ~5 хвилин.</div>
+        <button class="btn-start-test" onclick="startTest()">Почати тест</button>
+      </div>
+      <div id="test-progress-bar" style="display:none; flex-shrink:0;">
+        <div class="test-progress">
+          <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+          <div class="progress-txt" id="progress-txt">0 / 15</div>
+        </div>
+      </div>
+      <div class="test-active" id="test-active">
+        <div id="q-container"></div>
+      </div>
+      <div class="test-result" id="test-result">
+        <div class="result-level" id="result-level">B1</div>
+        <div class="result-title" id="result-title">Середній рівень</div>
+        <div class="result-score" id="result-score"></div>
+        <div class="result-sub" id="result-sub"></div>
+        <button class="btn-retest" onclick="resetTest()">Пройти ще раз</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let apiKey = '', userLevel = 'B1', speechRate = 0.9;
+let recognition = null, isListening = false, isBusy = false;
+let errorCount = 0, turnCount = 0, conversationHistory = [];
+let lastAiText = '';
+
+// ── SETUP ──
+window.addEventListener('load', () => {
+  const k = localStorage.getItem('groq_key');
+  const l = localStorage.getItem('user_level');
+  const s = localStorage.getItem('speech_rate');
+  if (k) document.getElementById('api-key-input').value = k;
+  if (l) document.getElementById('level-select').value = l;
+  if (s) {
+    speechRate = parseFloat(s);
+    document.getElementById('setup-speed').value = s;
+    document.getElementById('setup-speed-val').textContent = parseFloat(s).toFixed(1) + 'x';
+  }
+  loadPhrasalVerb();
+});
+
+function startApp() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key.startsWith('gsk_')) { alert('Введи правильний Groq API ключ (gsk_...)'); return; }
+  apiKey = key;
+  userLevel = document.getElementById('level-select').value;
+  speechRate = parseFloat(document.getElementById('setup-speed').value);
+  localStorage.setItem('groq_key', key);
+  localStorage.setItem('user_level', userLevel);
+  localStorage.setItem('speech_rate', speechRate);
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('speed-slider').value = speechRate;
+  document.getElementById('speed-val').textContent = speechRate.toFixed(1) + 'x';
+  window.speechSynthesis.getVoices();
+  initRecognition();
+  sendGreeting();
+}
+
+function resetApp() {
+  apiKey = '';
+  localStorage.removeItem('groq_key');
+  if (recognition) try { recognition.stop(); } catch(e) {}
+  conversationHistory = [];
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('corrections-list').innerHTML = '<div class="no-corrections">Тут з\'являться твої помилки після першої репліки</div>';
+  errorCount = 0; turnCount = 0; updateStats();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('setup').style.display = 'flex';
+}
+
+// ── TABS ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['chat','phrasal','test'];
+    t.classList.toggle('active', names[i] === tab);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// ── SPEECH ──
+function updateSpeed(v) {
+  speechRate = parseFloat(v);
+  document.getElementById('speed-val').textContent = parseFloat(v).toFixed(1) + 'x';
+  localStorage.setItem('speech_rate', v);
+}
+
+function speak(text) {
+  return new Promise(resolve => {
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'en-US'; utt.rate = speechRate; utt.pitch = 1;
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v => v.lang === 'en-US' && (v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Daniel')));
+    if (preferred) utt.voice = preferred;
+    utt.onend = resolve; utt.onerror = resolve;
+    window.speechSynthesis.speak(utt);
+  });
+}
+
+// ── RECOGNITION ──
+function initRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { setStatus('Потрібен Chrome для мікрофону'); return; }
+  recognition = new SR();
+  recognition.lang = 'en-US'; recognition.continuous = false; recognition.interimResults = false;
+  recognition.onstart = () => { isListening = true; document.getElementById('mic-btn').classList.add('listening'); setStatus('● слухаю...', true); };
+  recognition.onresult = e => handleUserSpeech(e.results[0][0].transcript);
+  recognition.onerror = e => {
+    isListening = false; document.getElementById('mic-btn').classList.remove('listening');
+    if (e.error === 'no-speech') setStatus('Нічого не почув. Натисни знову.');
+    else if (e.error === 'not-allowed') setStatus('Дозволь мікрофон у браузері.');
+    else setStatus('Помилка: ' + e.error);
+  };
+  recognition.onend = () => { isListening = false; document.getElementById('mic-btn').classList.remove('listening'); if (!isBusy) setStatus('утримуй кнопку і говори'); };
+  document.getElementById('mic-btn').classList.remove('disabled');
+  setStatus('утримуй кнопку і говори');
+}
+
+function startMic(e) {
+  if (e) e.preventDefault();
+  if (isBusy || isListening) return;
+  try { recognition.start(); } catch(err) { setStatus('Помилка запуску'); }
+}
+function stopMic(e) {
+  if (e) e.preventDefault();
+  if (!isListening) return;
+  try { recognition.stop(); } catch(err) {}
+}
+
+function setStatus(msg, active) {
+  const el = document.getElementById('mic-status');
+  el.textContent = msg;
+  el.className = 'mic-status' + (active ? ' active' : '');
+}
+
+// ── CHAT ──
+function addMessage(role, text) {
+  const w = document.createElement('div');
+  w.className = 'msg msg-' + role;
+  w.innerHTML = `<div class="msg-label">${role==='ai'?'🔊 AI':'🎙️ Ти'}</div>${escHtml(text)}`;
+  document.getElementById('messages').appendChild(w);
+  w.scrollIntoView({ behavior:'smooth', block:'end' });
+  if (role === 'ai') {
+    lastAiText = text;
+    document.getElementById('replay-btn').classList.remove('disabled');
+  }
+  return w;
+}
+
+function replayLast() {
+  if (lastAiText && !isBusy) speak(lastAiText);
+}
+function addThinking() {
+  const w = document.createElement('div');
+  w.className = 'msg msg-thinking';
+  w.innerHTML = '<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  document.getElementById('messages').appendChild(w);
+  w.scrollIntoView({ behavior:'smooth', block:'end' });
+  return w;
+}
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function updateStats() { document.getElementById('stat-errors').textContent = errorCount; document.getElementById('stat-turns').textContent = turnCount; }
+function showError(msg) { const b=document.getElementById('error-banner'); b.textContent=msg; b.style.display='block'; setTimeout(()=>b.style.display='none',5000); }
+
+async function sendGreeting() {
+  isBusy = true; setStatus('AI говорить...'); document.getElementById('mic-btn').classList.add('disabled');
+  const topic = document.getElementById('topic-select').value;
+  const sys = getSystemPrompt();
+
+  const openings = [
+    `Start with a casual, warm hello and jump straight into the topic "${topic}" with a personal question. Be spontaneous.`,
+    `Open with a fun observation or surprising fact related to "${topic}", then ask the student's opinion.`,
+    `Pretend you just ran into a friend. Greet them and naturally bring up "${topic}" in conversation.`,
+    `Start with a light joke or playful comment about "${topic}", then ask a question.`,
+    `Begin with a hypothetical: "Imagine you could..." related to "${topic}". Keep it short and engaging.`,
+    `Open by saying you were just thinking about something related to "${topic}" and ask for the student's take.`,
+    `Start with a short story opener ("The other day I...") tied to "${topic}", then ask the student.`,
+    `Kick off with an enthusiastic comment about "${topic}" and ask what the student's experience is like.`,
+  ];
+  const opener = openings[Math.floor(Math.random() * openings.length)];
+
+  const greeting = await callGroqSimple(sys, [{ role:'user', content:`${opener} Max 2-3 sentences total.` }]);
+  if (greeting) { addMessage('ai', greeting); conversationHistory.push({role:'assistant',content:greeting}); await speak(greeting); }
+  isBusy = false; document.getElementById('mic-btn').classList.remove('disabled'); setStatus('утримуй кнопку і говори');
+}
+
+async function handleUserSpeech(text) {
+  if (!text.trim()) return;
+  isBusy = true; setStatus('обробляю...'); document.getElementById('mic-btn').classList.add('disabled');
+  turnCount++; updateStats();
+  addMessage('user', text);
+  conversationHistory.push({role:'user',content:text});
+  const thinking = addThinking();
+  const result = await callGroqWithCorrections(getSystemPrompt(), conversationHistory.map(m=>({role:m.role,content:m.content})));
+  thinking.remove();
+  if (result) {
+    const { reply, corrections } = result;
+    addMessage('ai', reply);
+    conversationHistory.push({role:'assistant',content:reply});
+    renderCorrections(corrections);
+    if (corrections?.errors) { errorCount += corrections.errors.length; updateStats(); }
+    await speak(reply);
+  }
+  isBusy = false; document.getElementById('mic-btn').classList.remove('disabled'); setStatus('утримуй кнопку і говори');
+}
+
+function getSystemPrompt() {
+  return `You are a friendly English conversation tutor. Student level: ${userLevel}.
+Keep replies SHORT (2-4 sentences). Ask follow-up questions. Adapt vocabulary.
+ALWAYS respond in this EXACT format:
+REPLY: [your English reply]
+JSON: {"errors":[{"wrong":"...","right":"...","type":"Grammar/Vocabulary/Tense","note":"пояснення українською коротко"}],"good":["що зробив добре українською"],"tip":"порада українською або null"}
+If no errors: "errors":[]`;
+}
+
+async function callGroqWithCorrections(sys, messages) {
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body: JSON.stringify({ model:'llama-3.3-70b-versatile', max_tokens:500, messages:[{role:'system',content:sys},...messages] })
+    });
+    if (!r.ok) { const e=await r.json(); showError('Groq: '+(e.error?.message||r.status)); return null; }
+    const d = await r.json(); const raw = d.choices[0].message.content;
+    const replyM = raw.match(/REPLY:\s*([\s\S]*?)(?=JSON:|$)/);
+    const jsonM = raw.match(/JSON:\s*(\{[\s\S]*\})/);
+    const reply = replyM ? replyM[1].trim() : raw.split('\n')[0];
+    let corrections = null;
+    if (jsonM) try { corrections = JSON.parse(jsonM[1]); } catch(e) {}
+    return { reply, corrections };
+  } catch(e) { showError('Помилка: '+e.message); return null; }
+}
+
+async function callGroqSimple(sys, messages) {
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body: JSON.stringify({ model:'llama-3.3-70b-versatile', max_tokens:200, messages:[{role:'system',content:sys},...messages] })
+    });
+    if (!r.ok) return null;
+    const d = await r.json();
+    return d.choices[0].message.content.replace(/REPLY:\s*/,'').replace(/JSON:[\s\S]*/,'').trim();
+  } catch(e) { return null; }
+}
+
+function renderCorrections(corrections) {
+  const list = document.getElementById('corrections-list');
+  if (!corrections || (!corrections.errors?.length && !corrections.good?.length && !corrections.tip)) {
+    const c = document.createElement('div'); c.className='correction-card good';
+    c.innerHTML='<div class="corr-type">Добре</div><div class="corr-note">Помилок не знайдено ✓</div>';
+    list.insertBefore(c, list.firstChild); return;
+  }
+  const f = document.createDocumentFragment();
+  if (corrections.tip) { const c=document.createElement('div'); c.className='correction-card tip'; c.innerHTML=`<div class="corr-type">Порада</div><div class="corr-note">${escHtml(corrections.tip)}</div>`; f.appendChild(c); }
+  corrections.good?.forEach(g => { const c=document.createElement('div'); c.className='correction-card good'; c.innerHTML=`<div class="corr-type">Добре ✓</div><div class="corr-note">${escHtml(g)}</div>`; f.appendChild(c); });
+  corrections.errors?.forEach(e => { const c=document.createElement('div'); c.className='correction-card error'; c.innerHTML=`<div class="corr-type">${escHtml(e.type||'Помилка')}</div><div><span class="corr-wrong">${escHtml(e.wrong||'')}</span><span class="corr-arrow"> → </span><span class="corr-right">${escHtml(e.right||'')}</span></div>${e.note?`<div class="corr-note">${escHtml(e.note)}</div>`:''}`; f.appendChild(c); });
+  list.insertBefore(f, list.firstChild);
+  const nc = list.querySelector('.no-corrections'); if (nc) nc.remove();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const ts = document.getElementById('topic-select');
+  if (ts) ts.addEventListener('change', () => { if(apiKey){conversationHistory=[];document.getElementById('messages').innerHTML='';sendGreeting();} });
+});
+
+// ── PHRASAL VERBS ──
+const PHRASAL_VERBS = [
+  { verb:'give up', meaning:'кинути, відмовитись від чогось', example:'She gave up smoking last year.', task:'Напиши речення про те, що ти або хтось кинув/відмовився від чогось.' },
+  { verb:'look after', meaning:'піклуватись, доглядати', example:'Can you look after my dog this weekend?', task:'Напиши речення про те, хто за ким піклується.' },
+  { verb:'find out', meaning:'дізнатись, з\'ясувати', example:'I found out that the shop was closed.', task:'Напиши речення про те, що ти дізнався нещодавно.' },
+  { verb:'take off', meaning:'злітати / знімати одяг / ставати популярним', example:'The plane took off at 7am.', task:'Напиши речення з одним зі значень цього дієслова.' },
+  { verb:'run out of', meaning:'вичерпатись, закінчитись', example:'We ran out of milk this morning.', task:'Напиши речення про те, що у тебе або десь закінчилось.' },
+  { verb:'come across', meaning:'натрапити, випадково знайти', example:'I came across an old photo yesterday.', task:'Напиши речення про щось, що ти випадково знайшов або зустрів.' },
+  { verb:'put off', meaning:'відкладати на потім', example:'Don\'t put off your homework until tomorrow.', task:'Напиши речення про щось, що ти або хтось відкладає.' },
+  { verb:'carry on', meaning:'продовжувати', example:'Carry on with your work, I\'ll be back soon.', task:'Напиши речення про те, що хтось продовжує робити.' },
+  { verb:'turn up', meaning:'з\'явитись / збільшити гучність', example:'He turned up late to the meeting.', task:'Напиши речення про те, як хтось з\'явився або щось трапилось несподівано.' },
+  { verb:'get along', meaning:'ладнати, добре ставитись', example:'I get along well with my colleagues.', task:'Напиши речення про те, як ти ладнаєш з кимось.' },
+  { verb:'bring up', meaning:'виховувати / порушити тему', example:'She was brought up in a small village.', task:'Напиши речення про виховання або про тему, яку хтось порушив.' },
+  { verb:'go through', meaning:'пережити, пройти через щось', example:'She went through a difficult time last year.', task:'Напиши речення про щось важке, що ти або хтось пережив.' },
+];
+
+let currentPV = null;
+
+function loadPhrasalVerb(idx) {
+  if (idx === undefined) idx = Math.floor(Math.random() * PHRASAL_VERBS.length);
+  currentPV = PHRASAL_VERBS[idx];
+  const body = document.getElementById('pv-body');
+  body.innerHTML = `
+    <div class="pv-card">
+      <div class="pv-verb">${escHtml(currentPV.verb)}</div>
+      <div class="pv-meaning">${escHtml(currentPV.meaning)}</div>
+      <div class="pv-example">${escHtml(currentPV.example)}</div>
+      <div class="pv-task">${escHtml(currentPV.task)}</div>
+      <div class="pv-input-row">
+        <input class="pv-input" id="pv-input" type="text" placeholder="Напиши своє речення..." onkeydown="if(event.key==='Enter')checkPV()">
+        <button class="btn-check" onclick="checkPV()">Перевірити</button>
+      </div>
+      <div class="pv-feedback" id="pv-feedback"></div>
+      <button class="btn-next" onclick="loadPhrasalVerb()" style="margin-top:10px">Наступне дієслово →</button>
+    </div>
+    <div id="pv-history"></div>
+  `;
+}
+
+async function checkPV() {
+  const input = document.getElementById('pv-input');
+  const sentence = input.value.trim();
+  if (!sentence) return;
+
+  const fb = document.getElementById('pv-feedback');
+  fb.style.display = 'block'; fb.className = 'pv-feedback'; fb.textContent = 'Перевіряю...';
+
+  if (!apiKey) { fb.className='pv-feedback bad'; fb.textContent='Спочатку введи API ключ на головному екрані.'; return; }
+
+  const prompt = `You are an English teacher. The student is level ${userLevel}.
+The phrasal verb to practice: "${currentPV.verb}" (meaning: ${currentPV.meaning})
+Student's sentence: "${sentence}"
+
+Check if:
+1. The phrasal verb "${currentPV.verb}" is used correctly
+2. Grammar is correct
+3. The sentence makes sense
+
+Respond ONLY in this JSON format:
+{"ok":true/false,"corrected":"corrected sentence or same if correct","feedback":"короткий коментар українською (1-2 речення)","grammar_errors":[{"wrong":"...","right":"..."}]}`;
+
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body: JSON.stringify({ model:'llama-3.3-70b-versatile', max_tokens:250, messages:[{role:'user',content:prompt}] })
+    });
+    const d = await r.json();
+    const raw = d.choices[0].message.content.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(raw);
+
+    if (result.ok) {
+      fb.className = 'pv-feedback ok';
+      fb.innerHTML = `✓ Правильно! ${escHtml(result.feedback)}`;
+    } else {
+      fb.className = 'pv-feedback bad';
+      let html = `✗ ${escHtml(result.feedback)}`;
+      if (result.corrected && result.corrected !== sentence) html += `<br><span style="color:var(--text3)">Краще:</span> <strong style="color:var(--text)">${escHtml(result.corrected)}</strong>`;
+      fb.innerHTML = html;
+    }
+  } catch(e) {
+    fb.className='pv-feedback bad'; fb.textContent='Помилка перевірки. Спробуй ще.';
+  }
+}
+
+// ── LEVEL TEST ──
+const TEST_QUESTIONS = [
+  { q:'She ___ to school every day.', opts:['go','goes','going','gone'], correct:1, level:'A1' },
+  { q:'There ___ many people at the party.', opts:['was','were','is','are'], correct:1, level:'A2' },
+  { q:'I have lived here ___ 2010.', opts:['for','since','from','during'], correct:1, level:'A2' },
+  { q:'If I ___ rich, I would travel the world.', opts:['am','was','were','be'], correct:2, level:'B1' },
+  { q:'She suggested ___ a walk in the park.', opts:['take','to take','taking','taken'], correct:2, level:'B1' },
+  { q:'By the time he arrived, we ___ dinner.', opts:['finished','have finished','had finished','finish'], correct:2, level:'B1' },
+  { q:'The report needs to ___ before Friday.', opts:['submit','submitting','be submitted','submitted'], correct:2, level:'B2' },
+  { q:'He spoke so quietly that I could ___ hear him.', opts:['hard','hardly','hard to','scarcely to'], correct:1, level:'B2' },
+  { q:'Which word means "to officially end a marriage"?', opts:['separate','divorce','break','split'], correct:1, level:'B1' },
+  { q:'She is very good ___ solving problems.', opts:['in','on','at','for'], correct:2, level:'A2' },
+  { q:'___ you mind closing the window?', opts:['Do','Would','Could','Should'], correct:1, level:'B1' },
+  { q:'The new law ___ into effect next month.', opts:['comes','will come','is come','come'], correct:1, level:'B2' },
+  { q:'Choose the correct sentence:', opts:['I am agree with you.','I agree with you.','I am agreeing with you.','I agreeing with you.'], correct:1, level:'A2' },
+  { q:'She is the most ___ person I know.', opts:['talent','talented','talently','talentful'], correct:1, level:'A2' },
+  { q:'Despite ___ tired, he continued working.', opts:['be','was','been','being'], correct:3, level:'B2' },
+];
+
+let testIdx = 0, testScore = 0, testAnswered = false;
+
+function startTest() {
+  testIdx = 0; testScore = 0;
+  document.getElementById('test-intro').style.display = 'none';
+  document.getElementById('test-progress-bar').style.display = 'block';
+  document.getElementById('test-active').style.display = 'flex';
+  document.getElementById('test-result').style.display = 'none';
+  showQuestion();
+}
+
+function showQuestion() {
+  testAnswered = false;
+  const q = TEST_QUESTIONS[testIdx];
+  document.getElementById('progress-bar').style.width = (testIdx/TEST_QUESTIONS.length*100)+'%';
+  document.getElementById('progress-txt').textContent = testIdx+' / '+TEST_QUESTIONS.length;
+  document.getElementById('q-container').innerHTML = `
+    <div class="q-card">
+      <div class="q-num">Питання ${testIdx+1} з ${TEST_QUESTIONS.length}</div>
+      <div class="q-text">${escHtml(q.q)}</div>
+      <div class="q-options">
+        ${q.opts.map((o,i)=>`<button class="q-opt" onclick="answerQ(${i})">${escHtml(o)}</button>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function answerQ(idx) {
+  if (testAnswered) return;
+  testAnswered = true;
+  const q = TEST_QUESTIONS[testIdx];
+  const opts = document.querySelectorAll('.q-opt');
+  opts.forEach((o,i) => {
+    o.classList.add('disabled');
+    if (i === q.correct) o.classList.add('correct');
+    else if (i === idx && idx !== q.correct) o.classList.add('wrong');
+  });
+  if (idx === q.correct) testScore++;
+  setTimeout(() => { testIdx++; if (testIdx < TEST_QUESTIONS.length) showQuestion(); else showResult(); }, 900);
+}
+
+function showResult() {
+  document.getElementById('test-progress-bar').style.display = 'none';
+  document.getElementById('test-active').style.display = 'none';
+  const res = document.getElementById('test-result');
+  res.style.display = 'flex';
+
+  const pct = testScore / TEST_QUESTIONS.length;
+  let level, title, sub;
+  if (pct < 0.25) { level='A1'; title='Початківець'; sub='Знаєш базові слова і фрази. Рекомендую починати з простих діалогів і базової граматики.'; }
+  else if (pct < 0.45) { level='A2'; title='Елементарний рівень'; sub='Розумієш прості речення. Фокусуйся на часах (Present/Past) і базовій лексиці.'; }
+  else if (pct < 0.6) { level='B1'; title='Середній рівень'; sub='Можеш спілкуватись на знайомі теми. Практикуй умовні речення і розширюй словниковий запас.'; }
+  else if (pct < 0.8) { level='B2'; title='Вище середнього'; sub='Впевнено спілкуєшся. Працюй над пасивним станом, складними структурами і фразовими дієсловами.'; }
+  else { level='C1'; title='Просунутий рівень'; sub='Відмінний рівень! Практикуй ділову англійську, читай автентичні тексти і дивись фільми без субтитрів.'; }
+
+  document.getElementById('result-level').textContent = level;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-score').textContent = `Правильних відповідей: ${testScore} з ${TEST_QUESTIONS.length}`;
+  document.getElementById('result-sub').textContent = sub;
+}
+
+function resetTest() {
+  document.getElementById('test-result').style.display = 'none';
+  document.getElementById('test-intro').style.display = 'flex';
+}
+</script>
+</body>
+</html>
