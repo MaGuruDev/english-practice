@@ -171,6 +171,8 @@ select option { background:var(--surface); }
 .btn-check { padding:8px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text2); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all .2s; white-space:nowrap; }
 .btn-check:hover { border-color:var(--accent); color:var(--accent); }
 .pv-feedback { font-size:12px; padding:7px 10px; border-radius:6px; margin-top:6px; display:none; }
+.pv-filter { font-size:11px; padding:4px 10px; border:1px solid var(--border); border-radius:12px; background:none; color:var(--text3); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .15s; }
+.pv-filter.active { background:var(--accent); color:#0a1a10; border-color:var(--accent); font-weight:500; }
 .pv-feedback.ok { background:#0f1f14; border:1px solid #1a3820; color:var(--accent); }
 .pv-feedback.bad { background:#1f1510; border:1px solid #3a2510; color:var(--warn); }
 .btn-next { width:100%; padding:10px; background:transparent; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text3); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all .2s; margin-top:4px; }
@@ -334,8 +336,22 @@ select option { background:var(--surface); }
   <div class="panel" id="panel-phrasal">
     <div class="pv-panel">
       <div class="pv-header">
-        <div class="pv-title">Фразові дієслова</div>
-        <div class="pv-sub">Побудуй речення з фразовим дієсловом — ШІ перевірить і поясни</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="pv-title">Фразові дієслова</div>
+          <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace" id="pv-counter"></div>
+        </div>
+        <div class="pv-sub" style="margin-bottom:8px">Побудуй речення з фразовим дієсловом — ШІ перевірить і пояснить</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="pv-filters">
+          <button class="pv-filter active" onclick="setPVFilter('all')">Всі</button>
+          <button class="pv-filter" onclick="setPVFilter('get')">get</button>
+          <button class="pv-filter" onclick="setPVFilter('make')">make</button>
+          <button class="pv-filter" onclick="setPVFilter('do')">do</button>
+          <button class="pv-filter" onclick="setPVFilter('put')">put</button>
+          <button class="pv-filter" onclick="setPVFilter('take')">take</button>
+          <button class="pv-filter" onclick="setPVFilter('look')">look</button>
+          <button class="pv-filter" onclick="setPVFilter('turn')">turn</button>
+          <button class="pv-filter" onclick="setPVFilter('other')">інші</button>
+        </div>
       </div>
       <div class="pv-body" id="pv-body">
         <!-- filled by JS -->
@@ -677,29 +693,137 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── PHRASAL VERBS ──
 const PHRASAL_VERBS = [
-  { verb:'give up', meaning:'кинути, відмовитись від чогось', example:'She gave up smoking last year.', task:'Напиши речення про те, що ти або хтось кинув/відмовився від чогось.' },
-  { verb:'look after', meaning:'піклуватись, доглядати', example:'Can you look after my dog this weekend?', task:'Напиши речення про те, хто за ким піклується.' },
-  { verb:'find out', meaning:'дізнатись, з\'ясувати', example:'I found out that the shop was closed.', task:'Напиши речення про те, що ти дізнався нещодавно.' },
-  { verb:'take off', meaning:'злітати / знімати одяг / ставати популярним', example:'The plane took off at 7am.', task:'Напиши речення з одним зі значень цього дієслова.' },
-  { verb:'run out of', meaning:'вичерпатись, закінчитись', example:'We ran out of milk this morning.', task:'Напиши речення про те, що у тебе або десь закінчилось.' },
-  { verb:'come across', meaning:'натрапити, випадково знайти', example:'I came across an old photo yesterday.', task:'Напиши речення про щось, що ти випадково знайшов або зустрів.' },
-  { verb:'put off', meaning:'відкладати на потім', example:'Don\'t put off your homework until tomorrow.', task:'Напиши речення про щось, що ти або хтось відкладає.' },
-  { verb:'carry on', meaning:'продовжувати', example:'Carry on with your work, I\'ll be back soon.', task:'Напиши речення про те, що хтось продовжує робити.' },
-  { verb:'turn up', meaning:'з\'явитись / збільшити гучність', example:'He turned up late to the meeting.', task:'Напиши речення про те, як хтось з\'явився або щось трапилось несподівано.' },
-  { verb:'get along', meaning:'ладнати, добре ставитись', example:'I get along well with my colleagues.', task:'Напиши речення про те, як ти ладнаєш з кимось.' },
-  { verb:'bring up', meaning:'виховувати / порушити тему', example:'She was brought up in a small village.', task:'Напиши речення про виховання або про тему, яку хтось порушив.' },
-  { verb:'go through', meaning:'пережити, пройти через щось', example:'She went through a difficult time last year.', task:'Напиши речення про щось важке, що ти або хтось пережив.' },
+  // GET
+  { group:'get', verb:'get on / get off', meaning:'сісти / вийти (автобус, метро, велосипед)', example:"I get on the bus at Central Station and get off at Park Road.", task:'Напиши речення про те, як ти або хтось сів чи вийшов з громадського транспорту.' },
+  { group:'get', verb:'get in / get out', meaning:'сісти / вийти (авто, таксі)', example:"She got in the taxi and asked the driver to hurry.", task:'Напиши речення з автомобілем або таксі.' },
+  { group:'get', verb:'get on with sb', meaning:'ладнати з кимось', example:"I get on really well with my new colleagues.", task:'Напиши речення про те, як ти ладнаєш з кимось.' },
+  { group:'get', verb:'get rid of sth', meaning:'позбутися чогось', example:"I need to get rid of all this old furniture.", task:'Напиши речення про щось, від чого хочеш або хотів позбутися.' },
+  { group:'get', verb:'get sth across (to sb)', meaning:'донести думку, пояснити', example:"It was hard to get my point across in the meeting.", task:'Напиши речення про ситуацію, де треба було донести ідею.' },
+  { group:'get', verb:'get round to sth', meaning:'нарешті знайти час зробити щось', example:"I never get round to tidying my room.", task:'Напиши речення про щось, до чого ніяк не доходять руки.' },
+  { group:'get', verb:'get away', meaning:'втекти, вирватися', example:"The thief got away before the police arrived.", task:'Напиши речення про втечу або відпочинок (вирватися).' },
+  { group:'get', verb:'get away with sth', meaning:'уникнути покарання', example:"He cheated on the test but got away with it.", task:'Напиши речення про те, як хтось уникнув наслідків.' },
+  { group:'get', verb:'get back at sb', meaning:'помститися', example:"She got back at him by ignoring his calls.", task:'Напиши речення про помсту або відповідь на щось.' },
+  { group:'get', verb:'get into sth', meaning:'захопитися чимось, зацікавитися', example:"I really got into yoga last year.", task:'Напиши речення про нове захоплення.' },
+  { group:'get', verb:'get back to sb', meaning:'зв\'язатися пізніше, відповісти', example:"I\'ll get back to you tomorrow with the details.", task:'Напиши речення про обіцянку зв\'язатися.' },
+  { group:'get', verb:'get behind with sth', meaning:'відстати від графіка', example:"I got behind with my coursework last month.", task:'Напиши речення про те, що відстав від плану чи завдань.' },
+  { group:'get', verb:'get by', meaning:'якось зводити кінці з кінцями', example:"It\'s hard to get by on minimum wage.", task:'Напиши речення про те, як хтось якось справляється.' },
+  { group:'get', verb:'get at sb', meaning:'критикувати, причіплятися', example:"My boss keeps getting at me about being late.", task:'Напиши речення про те, як хтось постійно критикує.' },
+  { group:'get', verb:'get cut off', meaning:'раптово втратити зв\'язок', example:"I was in the middle of the call when I got cut off.", task:'Напиши речення про обірваний дзвінок або зв\'язок.' },
+  // MAKE
+  { group:'make', verb:'make for sw', meaning:'рушити до, попрямувати', example:"After the film, we made for the nearest café.", task:'Напиши речення про те, куди хтось попрямував.' },
+  { group:'make', verb:'make up sth (a story)', meaning:'вигадати, збрехати', example:"He made up an excuse for being late.", task:'Напиши речення про вигадану причину або історію.' },
+  { group:'make', verb:'be made up of sth', meaning:'складатися з', example:"The team is made up of people from five countries.", task:'Напиши речення про те, з чого складається група або річ.' },
+  { group:'make', verb:'make do with sth', meaning:'обходитися тим що є', example:"We had no butter, so we made do with oil.", task:'Напиши речення про ситуацію, де довелося обійтися чимось іншим.' },
+  { group:'make', verb:'make up for sth', meaning:'компенсувати', example:"I worked all weekend to make up for lost time.", task:'Напиши речення про те, як хтось компенсував щось.' },
+  { group:'make', verb:'make it up to sb', meaning:'загладити провину перед кимось', example:"I\'ll make it up to you — I promise.", task:'Напиши речення про обіцянку загладити провину.' },
+  { group:'make', verb:'make out that', meaning:'прикидатися, вдавати', example:"She made out that she didn\'t care, but I could see she was upset.", task:'Напиши речення про те, як хтось вдає.' },
+  { group:'make', verb:'make sth out', meaning:'розібрати, зрозуміти (важко)', example:"I couldn\'t make out what he was saying.", task:'Напиши речення про щось, що важко було розчути або зрозуміти.' },
+  { group:'make', verb:'make of sth', meaning:'думати про, оцінювати', example:"What do you make of the new manager?", task:'Напиши речення про свою думку щодо чогось або когось.' },
+  { group:'make', verb:'make up with sb', meaning:'помиритися', example:"They argued, but made up with each other the next day.", task:'Напиши речення про примирення.' },
+  { group:'make', verb:'make off with sth', meaning:'втекти з чимось', example:"Someone made off with my umbrella.", task:'Напиши речення про крадіжку або зникнення.' },
+  { group:'make', verb:'make sb into sth', meaning:'перетворити когось на', example:"The coach made him into a champion.", task:'Напиши речення про трансформацію когось.' },
+  // DO
+  { group:'do', verb:'do sth up', meaning:'застебнути / прикрасити / відремонтувати', example:"Do up your jacket — it\'s cold outside.", task:'Напиши речення про застібання одягу або ремонт.' },
+  { group:'do', verb:'do without sth', meaning:'обходитися без', example:"I can\'t do without my morning coffee.", task:'Напиши речення про те, без чого не можеш обійтися.' },
+  { group:'do', verb:'do sb in', meaning:'виснажити / вбити / покалічити', example:"That long hike really did me in.", task:'Напиши речення про щось що тебе виснажило.' },
+  { group:'do', verb:'do away with sth', meaning:'скасувати / позбутися', example:"The school decided to do away with school uniforms.", task:'Напиши речення про скасування правила або звички.' },
+  { group:'do', verb:'do sb down', meaning:'критикувати, принижувати', example:"Stop doing yourself down — you\'re very talented.", task:'Напиши речення про критику себе або інших.' },
+  { group:'do', verb:'do with sth', meaning:'мати відношення до / хотілося б', example:"I could do with a cup of tea right now.", task:'Напиши речення про те, що тобі зараз потрібно.' },
+  { group:'do', verb:'do sth over', meaning:'робити знову і знову', example:"She did the calculation over until she got it right.", task:'Напиши речення про повторення дії.' },
+  { group:'do', verb:'do sb out of sth', meaning:'обдурити когось з грошей/права', example:"He did his partner out of thousands of pounds.", task:'Напиши речення про обман.' },
+  { group:'do', verb:'be done for', meaning:'бути приреченим', example:"Without fuel we\'re done for.", task:'Напиши речення про безнадійну ситуацію.' },
+  // PUT
+  { group:'put', verb:'put sth on', meaning:'одягнути / увімкнути / організувати', example:"Put on your coat — it\'s raining.", task:'Напиши речення про одягання або організацію чогось.' },
+  { group:'put', verb:'put sth together', meaning:'зібрати (меблі, пристрій)', example:"It took me an hour to put the shelves together.", task:'Напиши речення про збирання чогось.' },
+  { group:'put', verb:'put sth in / take sth out', meaning:'покласти всередину / вийняти', example:"Put your phone in your pocket before the meeting.", task:'Напиши речення про те, що кладеш або виймаєш.' },
+  { group:'put', verb:'put off', meaning:'відкладати', example:"Stop putting off the dentist appointment.", task:'Напиши речення про щось, що ти або хтось відкладає.' },
+  { group:'put', verb:'put sb down', meaning:'принижувати когось', example:"He always puts her down in front of others.", task:'Напиши речення про публічне приниження.' },
+  // TAKE
+  { group:'take', verb:'take sth apart', meaning:'розібрати на частини', example:"He took the clock apart to fix it.", task:'Напиши речення про розбирання чогось.' },
+  { group:'take', verb:'take sth off', meaning:'зняти (одяг)', example:"Take off your shoes at the door please.", task:'Напиши речення про зняття одягу або взуття.' },
+  { group:'take', verb:'take off (no object)', meaning:'злетіти (літак) / стати популярним', example:"Our flight took off two hours late.", task:'Напиши речення про злітання або успіх.' },
+  { group:'take', verb:'take sth away / throw sth away', meaning:'забрати / викинути', example:"Throw away anything you haven\'t used in a year.", task:'Напиши речення про викидання непотрібних речей.' },
+  { group:'take', verb:'take sb down', meaning:'повалити / принизити', example:"The journalist took down the corrupt official.", task:'Напиши речення про те, як когось зупинили або звалили.' },
+  // LOOK
+  { group:'look', verb:'look after sb', meaning:'доглядати, піклуватися', example:"Can you look after my cat while I\'m away?", task:'Напиши речення про доглядання за кимось або чимось.' },
+  { group:'look', verb:'look for sth/sb', meaning:'шукати', example:"I\'ve been looking for my keys all morning.", task:'Напиши речення про пошук чогось.' },
+  { group:'look', verb:'look forward to sth', meaning:'з нетерпінням чекати', example:"I\'m really looking forward to the holidays.", task:'Напиши речення про те, чого ти з нетерпінням чекаєш.' },
+  // TURN
+  { group:'turn', verb:'turn sth on / off', meaning:'увімкнути / вимкнути', example:"Turn off the lights when you leave.", task:'Напиши речення про увімкнення або вимкнення чогось.' },
+  { group:'turn', verb:'turn sth down / up', meaning:'зменшити / збільшити гучність', example:"Can you turn down the music? It\'s too loud.", task:'Напиши речення про гучність або температуру.' },
+  { group:'turn', verb:'turn sb down', meaning:'відмовити комусь', example:"She turned down the job offer.", task:'Напиши речення про відмову.' },
+  { group:'turn', verb:'turn up / show up', meaning:'з\'явитися', example:"He turned up an hour late without any excuse.", task:'Напиши речення про те, як хтось з\'явився.' },
+  // OTHER
+  { group:'other', verb:'give up', meaning:'здатися / кинути звичку', example:"I gave up trying to fix it myself.", task:'Напиши речення про те, що ти кинув або від чого відмовився.' },
+  { group:'other', verb:'go out / come in', meaning:'вийти / увійти (будівля, кімната)', example:"She went out of the office without saying a word.", task:'Напиши речення про вхід або вихід з приміщення.' },
+  { group:'other', verb:'wrap sth up / unwrap', meaning:'загорнути / розгорнути', example:"She carefully unwrapped the birthday present.", task:'Напиши речення про загортання або розгортання.' },
+  { group:'other', verb:'zip sth up / unzip', meaning:'застебнути / розстебнути блискавку', example:"Zip up your bag before you leave.", task:'Напиши речення про блискавку на одязі або сумці.' },
+  { group:'other', verb:'pick sth up', meaning:'підняти / зайняти / заїхати по', example:"Can you pick up some milk on the way home?", task:'Напиши речення про те, щоб щось підняти або купити.' },
+  { group:'other', verb:'call sb back', meaning:'передзвонити', example:"I\'ll call you back in five minutes.", task:'Напиши речення про передзвін.' },
+  { group:'other', verb:'split up / break up', meaning:'розлучитися / розійтися', example:"They split up after three years together.", task:'Напиши речення про розставання або розхід у різні сторони.' },
+  { group:'other', verb:'fall over / trip over', meaning:'впасти, спіткнутися', example:"I tripped over the dog\'s lead and fell.", task:'Напиши речення про падіння або спотикання.' },
+  { group:'other', verb:'let sb down', meaning:'підвести когось', example:"I promised I wouldn\'t let you down this time.", task:'Напиши речення про те, як хтось підвів.' },
+  { group:'other', verb:'drop sb off', meaning:'підвезти і висадити', example:"Can you drop me off at the station?", task:'Напиши речення про підвезення.' },
+  { group:'other', verb:'cut sth off', meaning:'відрізати / відключити', example:"The storm cut off the electricity for hours.", task:'Напиши речення про відрізання або відключення.' },
+  { group:'other', verb:'cut sth up', meaning:'порізати на шматки', example:"Cut up the vegetables before adding them to the pan.", task:'Напиши речення про нарізання.' },
+  { group:'other', verb:'eat out', meaning:'їсти в ресторані', example:"We eat out every Friday evening.", task:'Напиши речення про вечерю в ресторані.' },
+  { group:'other', verb:'heat sth up / warm sth up', meaning:'розігріти', example:"Just heat up the soup — it\'ll be ready in two minutes.", task:'Напиши речення про розігрів їжі.' },
+  { group:'other', verb:'run out of sth', meaning:'вичерпатися', example:"We\'ve run out of coffee again.", task:'Напиши речення про те, що закінчилося.' },
+  { group:'other', verb:'work sth out / figure sth out', meaning:'розрахувати / зрозуміти', example:"I can\'t work out why the printer isn\'t working.", task:'Напиши речення про щось, що треба зрозуміти або розрахувати.' },
+  { group:'other', verb:'break down', meaning:'зламатися / розплакатися / розпастися', example:"The car broke down on the motorway.", task:'Напиши речення з одним зі значень цього дієслова.' },
+  { group:'other', verb:'rip sb off', meaning:'обдерти, нажитися на комусь', example:"That market totally ripped me off.", task:'Напиши речення про те, як когось обдерли.' },
+  { group:'other', verb:'come into sth', meaning:'успадкувати', example:"She came into a large fortune when her aunt died.", task:'Напиши речення про спадщину.' },
+  { group:'other', verb:'drop off', meaning:'задрімати / висадити', example:"I dropped off on the sofa after dinner.", task:'Напиши речення про те, як хтось задрімав.' },
+  { group:'other', verb:'go on at sb about sth', meaning:'постійно говорити про щось набридливо', example:"My mum keeps going on at me about tidying my room.", task:'Напиши речення про те, як хтось постійно пиляє.' },
+  { group:'other', verb:'cut down on sth', meaning:'зменшити споживання', example:"My doctor told me to cut down on sugar.", task:'Напиши речення про зменшення чогось шкідливого.' },
+  { group:'other', verb:'find out sth', meaning:'дізнатися', example:"I found out that the concert was cancelled.", task:'Напиши речення про те, що ти дізнався.' },
+  { group:'other', verb:'bring up', meaning:'виховувати / порушити тему', example:"She was brought up by her grandparents.", task:'Напиши речення про виховання або тему що порушили.' },
+  { group:'other', verb:'go through sth', meaning:'пережити щось важке', example:"He went through a very difficult divorce.", task:'Напиши речення про важкий досвід.' },
+  { group:'other', verb:'come across sth', meaning:'натрапити випадково', example:"I came across this photo while cleaning.", task:'Напиши речення про випадкову знахідку.' },
+  { group:'other', verb:'carry on', meaning:'продовжувати', example:"Carry on — I\'m listening.", task:'Напиши речення про продовження дії.' },
 ];
 
 let currentPV = null;
+let pvFilter = 'all';
+let pvUsed = [];
 
-function loadPhrasalVerb(idx) {
-  if (idx === undefined) idx = Math.floor(Math.random() * PHRASAL_VERBS.length);
-  currentPV = PHRASAL_VERBS[idx];
+function setPVFilter(group) {
+  pvFilter = group;
+  pvUsed = [];
+  document.querySelectorAll('.pv-filter').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  loadPhrasalVerb();
+}
+
+function getFilteredVerbs() {
+  if (pvFilter === 'all') return PHRASAL_VERBS;
+  return PHRASAL_VERBS.filter(v => v.group === pvFilter);
+}
+
+function updatePVCounter() {
+  const filtered = getFilteredVerbs();
+  const done = pvUsed.length;
+  const total = filtered.length;
+  const el = document.getElementById('pv-counter');
+  if (el) el.textContent = done + ' / ' + total;
+}
+
+function loadPhrasalVerb() {
+  const filtered = getFilteredVerbs();
+  if (pvUsed.length >= filtered.length) pvUsed = [];
+  const available = filtered.filter((_, i) => !pvUsed.includes(filtered.indexOf(filtered[i]) === -1 ? i : PHRASAL_VERBS.indexOf(filtered[i])));
+  const pick = available[Math.floor(Math.random() * available.length)];
+  const globalIdx = PHRASAL_VERBS.indexOf(pick);
+  pvUsed.push(globalIdx);
+  currentPV = pick;
+  updatePVCounter();
   const body = document.getElementById('pv-body');
   body.innerHTML = `
     <div class="pv-card">
-      <div class="pv-verb">${escHtml(currentPV.verb)}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <div class="pv-verb">${escHtml(currentPV.verb)}</div>
+        <span style="font-size:10px;padding:2px 7px;border:1px solid var(--border);border-radius:10px;color:var(--text3);font-family:'DM Mono',monospace">${escHtml(currentPV.group)}</span>
+      </div>
       <div class="pv-meaning">${escHtml(currentPV.meaning)}</div>
       <div class="pv-example">${escHtml(currentPV.example)}</div>
       <div class="pv-task">${escHtml(currentPV.task)}</div>
@@ -708,10 +832,11 @@ function loadPhrasalVerb(idx) {
         <button class="btn-check" onclick="checkPV()">Перевірити</button>
       </div>
       <div class="pv-feedback" id="pv-feedback"></div>
-      <button class="btn-next" onclick="loadPhrasalVerb()" style="margin-top:10px">Наступне дієслово →</button>
+      <button class="btn-next" onclick="loadPhrasalVerb()" style="margin-top:10px">Наступне →</button>
     </div>
     <div id="pv-history"></div>
   `;
+  document.getElementById('pv-input').focus();
 }
 
 async function checkPV() {
