@@ -352,10 +352,6 @@ select option { background:var(--surface); }
           <button class="pv-filter" onclick="setPVFilter('turn')">turn</button>
           <button class="pv-filter" onclick="setPVFilter('give')">give</button>
           <button class="pv-filter" onclick="setPVFilter('come')">come</button>
-          <button class="pv-filter" onclick="setPVFilter('run')">run</button>
-          <button class="pv-filter" onclick="setPVFilter('set')">set</button>
-          <button class="pv-filter" onclick="setPVFilter('keep')">keep</button>
-          <button class="pv-filter" onclick="setPVFilter('go')">go</button>
           <button class="pv-filter" onclick="setPVFilter('other')">інші</button>
         </div>
       </div>
@@ -744,38 +740,6 @@ const PHRASAL_VERBS = [
   { group:'put', verb:'put sth in / take sth out', meaning:'покласти всередину / вийняти', example:"Put your phone in your pocket before the meeting.", task:'Напиши речення про те, що кладеш або виймаєш.' },
   { group:'put', verb:'put off', meaning:'відкладати', example:"Stop putting off the dentist appointment.", task:'Напиши речення про щось, що ти або хтось відкладає.' },
   { group:'put', verb:'put sb down', meaning:'принижувати когось', example:"He always puts her down in front of others.", task:'Напиши речення про публічне приниження.' },
-  { group:'put', verb:'put sth across / put sth forward', meaning:'донести ідею, переконати', example:"She put her ideas across very clearly in the meeting.", task:'Напиши речення про те, як хтось доніс свою думку.' },
-  { group:'put', verb:'put sth away', meaning:'прибрати на місце', example:"Put your phone away during dinner, please.", task:'Напиши речення про прибирання чогось на місце.' },
-  { group:'put', verb:'put sb up', meaning:'надати комусь нічліг', example:"Can you put me up for the night? My train was cancelled.", task:'Напиши речення про те, що комусь дали місце переночувати.' },
-  { group:'put', verb:'put sth up', meaning:'повісити на стіну / зібрати (намет)', example:"They put up a notice on the board about the meeting.", task:'Напиши речення про те, що повісили або зібрали.' },
-  { group:'put', verb:'put sth out', meaning:'загасити вогонь / вимкнути світло / видати на ринок', example:"Firefighters put out the blaze in two hours.", task:'Напиши речення про гасіння або вимкнення.' },
-  { group:'put', verb:'put sb through', meaning:'з\'єднати телефоном', example:"Could you put me through to the manager, please?", task:'Напиши речення про телефонне з\'єднання.' },
-  { group:'put', verb:'put up with sb/sth', meaning:'терпіти, миритися', example:"I cannot put up with this noise any longer.", task:'Напиши речення про те, що важко терпіти.' },
-  { group:'put', verb:'put sth by / put sth aside', meaning:'відкладати гроші / час на майбутнє', example:"I try to put some money aside every month.", task:'Напиши речення про те, що відкладаєш на майбутнє.' },
-  { group:'put', verb:'put sth down to sth', meaning:'пояснити причину чогось', example:"I put my tiredness down to all the overtime I have been doing.", task:'Напиши речення про причину якоїсь ситуації.' },
-  { group:'put', verb:'put sth behind sb', meaning:'залишити болісне у минулому', example:"It took years, but she finally put the accident behind her.", task:'Напиши речення про те, як хтось відпустив важкий досвід.' },
-  // RUN
-  { group:'run', verb:'run out of sth', meaning:'вичерпатися', example:"We have run out of coffee again.", task:'Напиши речення про те, що закінчилось.' },
-  { group:'run', verb:'run into / across sb', meaning:'випадково зустріти', example:"I ran into my old teacher at the supermarket.", task:'Напиши речення про несподівану зустріч.' },
-  { group:'run', verb:'run sb over', meaning:'збити людину (автівкою)', example:"A cyclist was run over near the school this morning.", task:'Напиши речення про дорожню аварію.' },
-  { group:'run', verb:'run away (from)', meaning:'тікати, іти назавжди', example:"He ran away from home when he was sixteen.", task:'Напиши речення про втечу від чогось або кудись.' },
-  { group:'run', verb:'run through sth', meaning:'коротко пояснити / переглянути', example:"Let me run through the main points before we finish.", task:'Напиши речення про короткий огляд інформації.' },
-  { group:'run', verb:'run up (a bill)', meaning:'накопичити великий борг/рахунок', example:"He ran up a huge credit card bill while travelling.", task:'Напиши речення про накопичення боргу або витрат.' },
-  { group:'run', verb:'run sb/sth down', meaning:'зносити / критикувати / збити', example:"Stop running yourself down — you are very talented.", task:'Напиши речення про критику себе або когось іншого.' },
-  { group:'run', verb:'run up against sth', meaning:'зіткнутися з труднощами', example:"We ran up against a lot of resistance from the committee.", task:'Напиши речення про проблему, з якою зіткнулися.' },
-  { group:'run', verb:'run sth by/past sb', meaning:'запитати думку / отримати схвалення', example:"Can I run this idea past you before the meeting?", task:'Напиши речення про те, як запитуєш чиюсь думку.' },
-  { group:'run', verb:'run after sb', meaning:'переслідувати, гнатися за кимось', example:"The dog ran after the ball across the park.", task:'Напиши речення про погоню.' },
-  // SET
-  { group:'set', verb:'set sth up', meaning:'організувати / встановити / відкрити бізнес', example:"They set up a small café near the university.", task:'Напиши речення про відкриття бізнесу або організацію чогось.' },
-  { group:'set', verb:'set off / set out', meaning:'вирушити в дорогу', example:"We set off early to avoid the traffic.", task:'Напиши речення про початок подорожі.' },
-  { group:'set', verb:'set sth off', meaning:'активувати (сигналізацію, вибух)', example:"Someone accidentally set off the fire alarm.", task:'Напиши речення про спрацювання сигналізації або вибух.' },
-  { group:'set', verb:'set in', meaning:'початися (про щось неприємне)', example:"The rain set in and we had to cancel the picnic.", task:'Напиши речення про початок чогось неприємного.' },
-  { group:'set', verb:'set sb back', meaning:'затримати прогрес / коштувати', example:"The repairs set us back about two thousand dollars.", task:'Напиши речення про затримку або велику витрату.' },
-  { group:'set', verb:'set sth out / set sth forth', meaning:'чітко викласти / пояснити', example:"The report sets out the main risks of the project.", task:'Напиши речення про документ або пояснення.' },
-  { group:'set', verb:'set apart (from)', meaning:'вирізнятися серед інших', example:"Her attention to detail really sets her apart from the rest.", task:'Напиши речення про те, що вирізняє людину.' },
-  { group:'set', verb:'set on sb / set upon sb', meaning:'напасти на когось', example:"The thieves set upon him as he left the station.", task:'Напиши речення про напад.' },
-  { group:'set', verb:'set sth aside', meaning:'відкласти вбік / зберегти на потім', example:"Set aside some time every day to practise English.", task:'Напиши речення про те, що ти відкладаєш час або ресурси.' },
-  { group:'set', verb:'set sb up', meaning:'підставити когось / познайомити', example:"His colleagues set him up — he did not steal anything.", task:'Напиши речення про підставу або знайомство.' },
   // TAKE
   { group:'take', verb:'take sth apart', meaning:'розібрати на частини', example:"He took the clock apart to fix it.", task:'Напиши речення про розбирання чогось.' },
   { group:'take', verb:'take sth off', meaning:'зняти (одяг)', example:"Take off your shoes at the door please.", task:'Напиши речення про зняття одягу або взуття.' },
@@ -791,33 +755,6 @@ const PHRASAL_VERBS = [
   { group:'turn', verb:'turn sth down / up', meaning:'зменшити / збільшити гучність', example:"Can you turn down the music? It\'s too loud.", task:'Напиши речення про гучність або температуру.' },
   { group:'turn', verb:'turn sb down', meaning:'відмовити комусь', example:"She turned down the job offer.", task:'Напиши речення про відмову.' },
   { group:'turn', verb:'turn up / show up', meaning:'з\'явитися', example:"He turned up an hour late without any excuse.", task:'Напиши речення про те, як хтось з\'явився.' },
-  // KEEP
-  { group:'keep', verb:'keep sb abreast of sth / keep sb informed', meaning:'тримати когось у курсі подій', example:"I will keep you abreast of any developments as they happen.", task:'Напиши речення про те, як хтось тримає когось у курсі.' },
-  { group:'keep', verb:'keep at sth', meaning:'наполегливо продовжувати (щоб покращитися)', example:"It is difficult, but just keep at it and you will improve.", task:'Напиши речення про наполегливість у чомусь.' },
-  { group:'keep', verb:'keep on ___ing', meaning:'продовжувати робити щось', example:"She kept on talking even after everyone had left.", task:'Напиши речення про те, що хтось продовжує робити знову і знову.' },
-  { group:'keep', verb:'keep on at sb about sth', meaning:'постійно пиляти когось', example:"My boss keeps on at me about finishing the report.", task:'Напиши речення про те, як хтось постійно нагадує або пиляє.' },
-  { group:'keep', verb:'keep up with sth/sb', meaning:'не відставати / бути в курсі', example:"It is hard to keep up with all the new technology.", task:'Напиши речення про те, як не відстаєш від чогось.' },
-  { group:'keep', verb:'keep sth up', meaning:'підтримувати зусилля / не давати знизитися', example:"Keep it up! Your English is getting much better.", task:'Напиши речення про підтримку темпу або якості.' },
-  { group:'keep', verb:'keep sth back / keep sth from sb', meaning:'приховати інформацію', example:"I know he is keeping something back from me.", task:'Напиши речення про те, що хтось не каже правди.' },
-  { group:'keep', verb:'keep to yourself / keep sth to yourself', meaning:'триматися осторонь / нікому не казати', example:"She tends to keep to herself at parties.", task:'Напиши речення про людину, яка тримається осторонь або не ділиться секретом.' },
-  { group:'keep', verb:'keep to sth / stick to sth', meaning:'дотримуватися плану або обіцянки', example:"We need to keep to the budget we agreed on.", task:'Напиши речення про дотримання плану або правил.' },
-  { group:'keep', verb:'keep sth down', meaning:'говорити тихіше / стримати зростання', example:"Can you keep the noise down? The baby is sleeping.", task:'Напиши речення про те, щоб зменшити шум або витрати.' },
-  { group:'keep', verb:'keep out (of sth)', meaning:'не входити / триматися осторонь', example:"Keep out of my room when I am working, please.", task:'Напиши речення про те, щоб не заходили або трималися осторонь.' },
-  { group:'keep', verb:'keep ahead of sb', meaning:'залишатися попереду', example:"We need to keep ahead of the competition.", task:'Напиши речення про збереження переваги над кимось.' },
-  // GO
-  { group:'go', verb:'go with sth', meaning:'підходити, пасувати / супроводжувати', example:"That shirt doesn\'t really go with those trousers.", task:'Напиши речення про те, що до чогось пасує або не пасує.' },
-  { group:'go', verb:'go on', meaning:'тривати / відбуватися / продовжувати', example:"What is going on? Everything sounds chaotic in there.", task:'Напиши речення про те, що відбувається або продовжується.' },
-  { group:'go', verb:'go on at sb about sth', meaning:'постійно пиляти когось', example:"She kept going on at him about leaving his job.", task:'Напиши речення про набридливі повторювані зауваження.' },
-  { group:'go', verb:'go ahead (with sth)', meaning:'продовжувати, починати', example:"The event will go ahead despite the bad weather.", task:'Напиши речення про те, що щось відбудеться або починається.' },
-  { group:'go', verb:'go through sth', meaning:'пережити важке / переглянути', example:"She went through a really tough time last year.", task:'Напиши речення про важкий досвід або перевірку чогось.' },
-  { group:'go', verb:'go through with sth', meaning:'довести до кінця попри труднощі', example:"I don\'t think he will go through with the surgery.", task:'Напиши речення про те, як хтось вирішив довести справу до кінця.' },
-  { group:'go', verb:'go for sth/sb', meaning:'вибрати / атакувати / продаватися за ціну', example:"I think I will go for the pasta — it looks amazing.", task:'Напиши речення про вибір між варіантами.' },
-  { group:'go', verb:'go without sth', meaning:'обходитися без чогось', example:"During the trip we had to go without hot water for a week.", task:'Напиши речення про те, без чого довелося обходитися.' },
-  { group:'go', verb:'go off', meaning:'спрацювати (сигналізація) / зіпсуватися / розлюбити', example:"The milk has gone off — it smells awful.", task:'Напиши речення про те, що спрацювало, зіпсувалося або перестало подобатися.' },
-  { group:'go', verb:'go down (well/badly)', meaning:'бути сприйнятим добре або погано', example:"His joke did not go down well with the audience.", task:'Напиши речення про те, як щось було сприйнято людьми.' },
-  { group:'go', verb:'go back on sth', meaning:'порушити обіцянку', example:"He went back on his word and cancelled the deal.", task:'Напиши речення про порушення обіцянки або угоди.' },
-  { group:'go', verb:'go along with sth', meaning:'погоджуватися / підтримувати ідею', example:"I don\'t love the plan, but I will go along with it.", task:'Напиши речення про те, як погоджуєшся з чиєюсь ідеєю.' },
-  { group:'go', verb:'go around doing sth', meaning:'проводити час, роблячи щось небажане / поширюватися', example:"A nasty rumour is going around the office.", task:'Напиши речення про щось що поширюється або що хтось постійно робить.' },
   // OTHER
   { group:'other', verb:'give up', meaning:'здатися / кинути звичку', example:"I gave up trying to fix it myself.", task:'Напиши речення про те, що ти кинув або від чого відмовився.' },
   { group:'other', verb:'go out / come in', meaning:'вийти / увійти (будівля, кімната)', example:"She went out of the office without saying a word.", task:'Напиши речення про вхід або вихід з приміщення.' },
@@ -833,6 +770,7 @@ const PHRASAL_VERBS = [
   { group:'other', verb:'cut sth up', meaning:'порізати на шматки', example:"Cut up the vegetables before adding them to the pan.", task:'Напиши речення про нарізання.' },
   { group:'other', verb:'eat out', meaning:'їсти в ресторані', example:"We eat out every Friday evening.", task:'Напиши речення про вечерю в ресторані.' },
   { group:'other', verb:'heat sth up / warm sth up', meaning:'розігріти', example:"Just heat up the soup — it\'ll be ready in two minutes.", task:'Напиши речення про розігрів їжі.' },
+  { group:'other', verb:'run out of sth', meaning:'вичерпатися', example:"We\'ve run out of coffee again.", task:'Напиши речення про те, що закінчилося.' },
   { group:'other', verb:'work sth out / figure sth out', meaning:'розрахувати / зрозуміти', example:"I can\'t work out why the printer isn\'t working.", task:'Напиши речення про щось, що треба зрозуміти або розрахувати.' },
   { group:'other', verb:'break down', meaning:'зламатися / розплакатися / розпастися', example:"The car broke down on the motorway.", task:'Напиши речення з одним зі значень цього дієслова.' },
   { group:'other', verb:'rip sb off', meaning:'обдерти, нажитися на комусь', example:"That market totally ripped me off.", task:'Напиши речення про те, як когось обдерли.' },
