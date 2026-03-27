@@ -375,7 +375,7 @@ select option { background:var(--surface); }
 <script>
 // ── STATE ──
 let apiKey = '', userLevel = 'B1', speechRate = 0.9;
-let recognition = null, isListening = false, isBusy = false;
+let recognition = null, isListening = false, isBusy = false, micButtonHeld = false;
 let errorCount = 0, turnCount = 0, conversationHistory = [];
 let lastAiText = '';
 
@@ -460,33 +460,58 @@ function initRecognition() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { setStatus('Потрібен Chrome для мікрофону'); return; }
   recognition = new SR();
-  recognition.lang = 'en-US'; recognition.continuous = false; recognition.interimResults = false;
-  recognition.onstart = () => { isListening = true; document.getElementById('mic-btn').classList.add('listening'); setStatus('● слухаю...', true); };
-  recognition.onresult = e => handleUserSpeech(e.results[0][0].transcript);
+  recognition.lang = 'en-US'; recognition.continuous = true; recognition.interimResults = true;
+  recognition._transcript = '';
+  recognition.onstart = () => { isListening = true; recognition._transcript = ''; document.getElementById('mic-btn').classList.add('listening'); setStatus('● слухаю...', true); };
+  recognition.onresult = e => {
+    let final = '';
+    for (let i = 0; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+    }
+    if (final) recognition._transcript += final;
+  };
   recognition.onerror = e => {
+    if (e.error === 'no-speech') return; // кнопка ще тримається — ігноруємо паузу
     isListening = false; document.getElementById('mic-btn').classList.remove('listening');
-    if (e.error === 'no-speech') setStatus('Нічого не почув. Натисни знову.');
-    else if (e.error === 'not-allowed') setStatus('Дозволь мікрофон у браузері.');
+    if (e.error === 'not-allowed') setStatus('Дозволь мікрофон у браузері.');
     else setStatus('Помилка: ' + e.error);
   };
-  recognition.onend = () => { isListening = false; document.getElementById('mic-btn').classList.remove('listening'); if (!isBusy) setStatus('утримуй кнопку і говори'); };
+  recognition.onend = () => {
+    isListening = false;
+    if (micButtonHeld) {
+      // кнопка ще тримається — перезапускаємо після паузи
+      try { recognition.start(); } catch(err) {}
+      return;
+    }
+    document.getElementById('mic-btn').classList.remove('listening');
+    const t = (recognition._transcript || '').trim();
+    recognition._transcript = '';
+    if (t) { handleUserSpeech(t); }
+    else if (!isBusy) setStatus('утримуй кнопку і говори');
+  };
   document.getElementById('mic-btn').classList.remove('disabled');
   setStatus('утримуй кнопку і говори');
 }
 
 function startMic(e) {
   if (e) e.preventDefault();
-  if (isBusy || isListening) return;
-  try { recognition.start(); } catch(err) { setStatus('Помилка запуску'); }
+  if (isBusy) return;
+  micButtonHeld = true;
+  recognition._transcript = '';
+  if (!isListening) {
+    try { recognition.start(); } catch(err) { setStatus('Помилка запуску'); }
+  }
 }
 function stopMic(e) {
   if (e) e.preventDefault();
-  if (!isListening) return;
-  try { recognition.stop(); } catch(err) {}
+  micButtonHeld = false;
+  if (isListening) {
+    try { recognition.stop(); } catch(err) {}
+  }
 }
 
 // Stop mic on mouseup anywhere on the page
-document.addEventListener('mouseup', () => { if (isListening) stopMic(); });
+document.addEventListener('mouseup', () => { if (micButtonHeld) stopMic(); });
 
 function setStatus(msg, active) {
   const el = document.getElementById('mic-status');
