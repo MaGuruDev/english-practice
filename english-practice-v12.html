@@ -286,24 +286,6 @@ select option { background:var(--surface); }
             <option>Daily routine — повсякден</option>
           </select>
         </div>
-        <div class="topic-bar" style="border-top:none;padding-top:4px">
-          <span class="topic-label">Час:</span>
-          <select class="topic-select" id="tense-select">
-            <option value="">Вільний (без обмежень)</option>
-            <option value="Present Simple">Present Simple — I work, she works</option>
-            <option value="Present Continuous">Present Continuous — I am working</option>
-            <option value="Present Perfect">Present Perfect — I have worked</option>
-            <option value="Present Perfect Continuous">Present Perfect Continuous — I have been working</option>
-            <option value="Past Simple">Past Simple — I worked</option>
-            <option value="Past Continuous">Past Continuous — I was working</option>
-            <option value="Past Perfect">Past Perfect — I had worked</option>
-            <option value="Past Perfect Continuous">Past Perfect Continuous — I had been working</option>
-            <option value="Future Simple">Future Simple (will) — I will work</option>
-            <option value="Future Continuous">Future Continuous — I will be working</option>
-            <option value="Future Perfect">Future Perfect — I will have worked</option>
-            <option value="Future Perfect Continuous">Future Perfect Continuous — I will have been working</option>
-          </select>
-        </div>
         <div id="error-banner"></div>
         <div class="messages" id="messages"></div>
         <div class="mic-area">
@@ -651,38 +633,34 @@ async function handleUserSpeech(text) {
 }
 
 function getSystemPrompt() {
-  const tense = (document.getElementById('tense-select') || {}).value || '';
-  const tenseBlock = tense
-    ? "\n\nTENSE FOCUS MODE — \"" + tense + "\":\n" +
-      "- Use " + tense + " in your own replies as much as naturally possible.\n" +
-      "- Ask follow-up questions that require the student to answer in " + tense + ".\n" +
-      "- If the student responds without using " + tense + " at all — point it out gently in your REPLY and ask them to try again using " + tense + ".\n" +
-      "- If they attempt " + tense + " but make a structural mistake — add it to errors[] as type Tense, include the correct formula in the rule field."
-    : '';
-  return "You are an English conversation tutor. Student level: " + userLevel + ".\n" +
-"Keep REPLY short (2-4 sentences). Ask a follow-up question. Adapt vocabulary to level." + tenseBlock + "\n\n" +
-"STRICT GRAMMAR CHECKING — THIS IS YOUR MOST IMPORTANT TASK:\n" +
-"You MUST carefully analyze every sentence the student says for ALL of these:\n" +
-"- Tense errors (wrong tense, missing auxiliary verb, wrong verb form)\n" +
-"- Subject-verb agreement (he go → he goes)\n" +
-"- Article errors (missing a/an/the, or wrong article)\n" +
-"- Preposition errors (wrong or missing preposition)\n" +
-"- Word order errors\n" +
-"- Vocabulary/collocation errors\n" +
-"- Missing or wrong verb forms (-ing, past participle, infinitive)\n\n" +
-"RULES FOR errors[]:\n" +
-"- If the student makes ANY mistake — add it to errors[]. Do NOT skip mistakes to be polite.\n" +
-"- Even small mistakes must be caught (e.g. \"I am go\" → \"I am going\", \"yesterday I have\" → \"yesterday I\")\n" +
-"- If the student says something unnatural or non-idiomatic — flag it as a Vocabulary error\n" +
-"- Only use errors:[] if the student's English was genuinely perfect for their level\n\n" +
-"RULES FOR good[]:\n" +
-"- Only mention something as good if it was actually impressive for the student's level\n" +
-"- Do NOT write generic praise like \"good effort\" or \"clear communication\" — be specific\n" +
-"- If there are errors, good[] can be empty []\n\n" +
-"ALWAYS respond in this EXACT format — no exceptions:\n" +
-"REPLY: [your English reply here]\n" +
-"JSON: {\"errors\":[{\"wrong\":\"exact wrong phrase from student\",\"right\":\"corrected phrase\",\"type\":\"Grammar/Tense/Vocabulary/Preposition/Article\",\"rule\":\"назва правила українською\",\"explain\":\"пояснення ЧОМУ так — формула + логіка, 2 речення українською\",\"example_wrong\":\"wrong example sentence\",\"example_right\":\"correct example sentence\"}],\"good\":[\"конкретне що зробив добре, або []\"],\"tip\":null}\n" +
-"CRITICAL: errors must be a JSON array []. Never a string.";
+  return `You are an English conversation tutor. Student level: ${userLevel}.
+Keep REPLY short (2-4 sentences). Ask a follow-up question. Adapt vocabulary to level.
+
+STRICT GRAMMAR CHECKING — THIS IS YOUR MOST IMPORTANT TASK:
+You MUST carefully analyze every sentence the student says for ALL of these:
+- Tense errors (wrong tense, missing auxiliary verb, wrong verb form)
+- Subject-verb agreement (he go → he goes)
+- Article errors (missing a/an/the, or wrong article)
+- Preposition errors (wrong or missing preposition)
+- Word order errors
+- Vocabulary/collocation errors
+- Missing or wrong verb forms (-ing, past participle, infinitive)
+
+RULES FOR errors[]:
+- If the student makes ANY mistake — add it to errors[]. Do NOT skip mistakes to be polite.
+- Even small mistakes must be caught (e.g. "I am go" → "I am going", "yesterday I have" → "yesterday I")
+- If the student says something unnatural or non-idiomatic — flag it as a Vocabulary error
+- Only use errors:[] if the student's English was genuinely perfect for their level
+
+RULES FOR good[]:
+- Only mention something as good if it was actually impressive for the student's level
+- Do NOT write generic praise like "good effort" or "clear communication" — be specific
+- If there are errors, good[] can be empty []
+
+ALWAYS respond in this EXACT format — no exceptions:
+REPLY: [your English reply here]
+JSON: {"errors":[{"wrong":"exact wrong phrase from student","right":"corrected phrase","type":"Grammar/Tense/Vocabulary/Preposition/Article","rule":"назва правила українською","explain":"пояснення ЧОМУ так — формула + логіка, 2 речення українською","example_wrong":"wrong example sentence","example_right":"correct example sentence"}],"good":["конкретне що зробив добре, або []"],"tip":null}
+CRITICAL: errors must be a JSON array []. Never a string.`;
 }
 
 async function callGroqWithCorrections(sys, messages, attempt = 0) {
